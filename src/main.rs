@@ -3,8 +3,10 @@ use futures::future::join_all;
 use log::{debug, error, info, warn};
 use rusoto_core::Region;
 use rusoto_credential::StaticProvider;
-use rusoto_s3::{S3Client};
+use rusoto_s3::S3Client;
 
+use std::future::Future;
+use std::pin::Pin;
 mod plugin;
 use plugin::*;
 
@@ -33,7 +35,8 @@ struct Config {
     access_key_secret: String,
 }
 
-async fn run(skip_upload: bool, p: RSSGenPlugin, s3_client: &S3Client) {
+async fn run(skip_upload: bool, p: impl Future<Output = RSSGenPlugin>, s3_client: &S3Client) {
+    let p = p.await;
     debug!("{}", p.pretty_string());
     if !skip_upload {
         if p.items.is_empty() {
@@ -62,13 +65,17 @@ async fn main() {
     let creds = StaticProvider::new_minimal(config.access_key_id, config.access_key_secret);
     let http = rusoto_core::HttpClient::new().expect("Could not initalize HTTP client");
     let s3_client = S3Client::new_with(http, creds, region);
-    let plugins = vec![nepszava::getplugin(), lobsters::getplugin()];
+    let plugins: Vec<Pin<Box<dyn Future<Output = RSSGenPlugin>>>> = vec![
+        Pin::from(Box::new(nepszava::getplugin())),
+        Pin::from(Box::new(lobsters::getplugin())),
+    ];
 
     join_all(
         plugins
             .into_iter()
             .map(|p| run(config.skip_upload, p, &s3_client)),
-    ).await;
+    )
+    .await;
 
     info!("finishing");
 }

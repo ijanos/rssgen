@@ -30,7 +30,7 @@ impl From<NepszavaArticle> for RSSItem {
     }
 }
 
-pub fn getplugin() -> RSSGenPlugin {
+pub async fn getplugin() -> RSSGenPlugin {
     let body =
         ureq::get("https://nepszava.hu/json/list.json?type_path=szerzo&data_path=nadasdy-adam")
             .call()

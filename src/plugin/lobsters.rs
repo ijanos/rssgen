@@ -41,7 +41,7 @@ fn category_from_string(from: String) -> Category {
 }
 
 // https://lobste.rs/t/linux,video,rust,security.json?page=2
-pub fn getplugin() -> RSSGenPlugin {
+pub async fn getplugin() -> RSSGenPlugin {
     let body = ureq::get("https://lobste.rs/t/linux,video,rust,security,zig.json")
         .call()
         .expect("Couldn't GET artictles")
