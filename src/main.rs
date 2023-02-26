@@ -65,15 +65,15 @@ async fn main() {
     let creds = StaticProvider::new_minimal(config.access_key_id, config.access_key_secret);
     let http = rusoto_core::HttpClient::new().expect("Could not initalize HTTP client");
     let s3_client = S3Client::new_with(http, creds, region);
-    let plugins: Vec<Pin<Box<dyn Future<Output = RSSGenPlugin>>>> = vec![
-        Pin::from(Box::new(nepszava::getplugin())),
-        Pin::from(Box::new(lobsters::getplugin())),
+    let plugins: Vec<Box<dyn Future<Output = RSSGenPlugin>>> = vec![
+        Box::new(nepszava::getplugin()),
+        Box::new(lobsters::getplugin()),
     ];
 
     join_all(
         plugins
             .into_iter()
-            .map(|p| run(config.skip_upload, p, &s3_client)),
+            .map(|p| run(config.skip_upload, Pin::from(p), &s3_client)),
     )
     .await;
 
