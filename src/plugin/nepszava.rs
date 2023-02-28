@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use rss::Item as RSSItem;
 use serde::Deserialize;
 
-use super::RSSGenPlugin;
+use super::{RSSGenPlugin, RSSGenPluginResult};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
@@ -30,13 +30,11 @@ impl From<NepszavaArticle> for RSSItem {
     }
 }
 
-pub async fn getplugin() -> RSSGenPlugin {
+pub async fn getplugin() -> RSSGenPluginResult {
     let body =
         ureq::get("https://nepszava.hu/json/list.json?type_path=szerzo&data_path=nadasdy-adam")
-            .call()
-            .expect("Couldn't GET artictles")
-            .into_json::<HashMap<String, Vec<NepszavaArticle>>>()
-            .expect("Couldn't convert response to JSON");
+            .call()?
+            .into_json::<HashMap<String, Vec<NepszavaArticle>>>()?;
 
     let rssitems = body
         .into_values()
@@ -45,11 +43,11 @@ pub async fn getplugin() -> RSSGenPlugin {
         .map(RSSItem::from)
         .collect::<Vec<RSSItem>>();
 
-    RSSGenPlugin {
+    Ok(RSSGenPlugin {
         filename: "nadasdy.rss".to_owned(),
         title: "Nadasdy Adam cikkei".to_owned(),
         description: "Nepszava Nadasdy Adam RSS feed".to_owned(),
         site_url: "https://nepszava.hu".to_owned(),
         items: rssitems,
-    }
+    })
 }

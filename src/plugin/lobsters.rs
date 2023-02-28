@@ -1,7 +1,7 @@
 use rss::{Category, Item as RSSItem};
 use serde::Deserialize;
 
-use super::RSSGenPlugin;
+use super::{RSSGenPlugin, RSSGenPluginResult};
 use chrono::prelude::*;
 
 #[derive(Deserialize, Debug)]
@@ -40,13 +40,10 @@ fn category_from_string(from: String) -> Category {
     }
 }
 
-// https://lobste.rs/t/linux,video,rust,security.json?page=2
-pub async fn getplugin() -> RSSGenPlugin {
+pub async fn getplugin() -> RSSGenPluginResult {
     let body = ureq::get("https://lobste.rs/t/linux,video,rust,security,zig.json")
-        .call()
-        .expect("Couldn't GET artictles")
-        .into_json::<Vec<Lobster>>()
-        .expect("Couldn't convert response to JSON");
+        .call()?
+        .into_json::<Vec<Lobster>>()?;
 
     let rssitems = body
         .into_iter()
@@ -54,11 +51,11 @@ pub async fn getplugin() -> RSSGenPlugin {
         .map(RSSItem::from)
         .collect::<Vec<RSSItem>>();
 
-    RSSGenPlugin {
+    Ok(RSSGenPlugin {
         filename: "lobsters.rss".to_owned(),
         title: "Lobsters".to_owned(),
         description: "Feed for lobsters topic".to_owned(),
         site_url: "https://lobste.rs".to_owned(),
         items: rssitems,
-    }
+    })
 }

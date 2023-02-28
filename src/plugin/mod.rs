@@ -4,6 +4,8 @@ pub mod nepszava;
 use rss::{Channel, ChannelBuilder, Item as RSSItem};
 use rusoto_s3::{PutObjectRequest, S3Client, S3};
 
+pub type RSSGenPluginResult = Result<RSSGenPlugin, Box<dyn std::error::Error>>;
+
 pub struct RSSGenPlugin {
     title: String,
     description: String,

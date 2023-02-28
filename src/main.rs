@@ -35,8 +35,14 @@ struct Config {
     access_key_secret: String,
 }
 
-async fn run(skip_upload: bool, p: impl Future<Output = RSSGenPlugin>, s3_client: &S3Client) {
-    let p = p.await;
+async fn run(skip_upload: bool, p: impl Future<Output = RSSGenPluginResult>, s3_client: &S3Client) {
+    let p = match p.await {
+        Ok(p) => p,
+        Err(e) => {
+            error!("plugin error: {}", e);
+            return;
+        }
+    };
     debug!("{}", p.pretty_string());
     if !skip_upload {
         if p.items.is_empty() {
@@ -48,6 +54,8 @@ async fn run(skip_upload: bool, p: impl Future<Output = RSSGenPlugin>, s3_client
                 Err(e) => error!("{} upload error: {}", p.filename, e),
             }
         }
+    } else {
+        info!("skipping {} upload", p.filename);
     }
 }
 
@@ -65,7 +73,7 @@ async fn main() {
     let creds = StaticProvider::new_minimal(config.access_key_id, config.access_key_secret);
     let http = rusoto_core::HttpClient::new().expect("Could not initalize HTTP client");
     let s3_client = S3Client::new_with(http, creds, region);
-    let plugins: Vec<Box<dyn Future<Output = RSSGenPlugin>>> = vec![
+    let plugins: Vec<Box<dyn Future<Output = RSSGenPluginResult>>> = vec![
         Box::new(nepszava::getplugin()),
         Box::new(lobsters::getplugin()),
     ];
