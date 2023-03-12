@@ -19,8 +19,8 @@ impl From<Lobster> for RSSItem {
     fn from(lobster: Lobster) -> Self {
         RSSItem {
             title: Some(lobster.title),
-            link: Some(lobster.comments_url),
-            description: Some(format!("{}\n{}", lobster.url, lobster.description)),
+            link: Some(lobster.comments_url.clone()),
+            description: Some(format!("<p>Article URL: {}</p><p>Comment URL: {}</p><p>score: {}</p><p>{}</p>", lobster.url, lobster.comments_url, lobster.score, lobster.description)),
             author: Some("Lobster".to_owned()),
             categories: lobster.tags.into_iter().map(category_from_string).collect(),
             pub_date: Some(
