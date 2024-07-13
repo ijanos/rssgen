@@ -39,7 +39,6 @@ pub async fn getplugin() -> RSSGenPluginResult {
     let rssitems = body
         .into_values()
         .flatten()
-        .into_iter()
         .map(RSSItem::from)
         .collect::<Vec<RSSItem>>();
 
