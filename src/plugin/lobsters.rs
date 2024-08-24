@@ -41,9 +41,10 @@ fn category_from_string(from: String) -> Category {
 }
 
 pub async fn getplugin() -> RSSGenPluginResult {
-    let body = ureq::get("https://lobste.rs/t/linux,video,rust,security,zig.json")
-        .call()?
-        .into_json::<Vec<Lobster>>()?;
+    let body = reqwest::get("https://lobste.rs/t/linux,video,rust,security,zig.json")
+        .await?
+        .json::<Vec<Lobster>>()
+        .await?;
 
     let rssitems = body
         .into_iter()

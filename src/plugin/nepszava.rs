@@ -32,10 +32,10 @@ impl From<NepszavaArticle> for RSSItem {
 }
 
 pub async fn getplugin() -> RSSGenPluginResult {
-    let body =
-        ureq::get("https://nepszava.hu/json/list.json?type_path=szerzo&data_path=nadasdy-adam")
-            .call()?
-            .into_json::<HashMap<String, Vec<NepszavaArticle>>>()?;
+    let body = reqwest::get("https://nepszava.hu/json/list.json?type_path=szerzo&data_path=nadasdy-adam")
+        .await?
+        .json::<HashMap<String, Vec<NepszavaArticle>>>()
+        .await?;
 
     let rssitems = body
         .into_values()
