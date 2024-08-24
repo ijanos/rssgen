@@ -25,7 +25,7 @@ impl From<Lobster> for RSSItem {
             categories: lobster.tags.into_iter().map(category_from_string).collect(),
             pub_date: Some(
                 DateTime::parse_from_rfc3339(&lobster.created_at)
-                    .unwrap()
+                    .expect("error parsing lobster's datetime")
                     .to_rfc2822(),
             ),
             ..Default::default()

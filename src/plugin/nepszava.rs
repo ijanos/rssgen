@@ -21,8 +21,9 @@ impl From<NepszavaArticle> for RSSItem {
             description: Some(article.lead),
             author: Some("Nádasdy Ádám".to_owned()),
             pub_date: Some(
-                Utc.datetime_from_str(&article.public_date, "%Y.%m.%d. %H:%M")
-                    .unwrap()
+                NaiveDateTime::parse_from_str(&article.public_date, "%Y.%m.%d. %H:%M")
+                    .expect("Error parsing nepszava's date time")
+                    .and_utc()
                     .to_rfc2822(),
             ),
             ..Default::default()
